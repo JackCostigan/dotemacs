@@ -55,6 +55,8 @@
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "C-z") 'helm-select-action)
+;; rebind esc to actually exit stuff
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                    ;;

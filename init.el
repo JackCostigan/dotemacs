@@ -17,6 +17,8 @@
   '(
     ;; high contrast zebburn theme
     zenburn-theme
+    ;; tomorrow themes
+    ;; color-theme-sanityinc-tomorrow
     ;; helm
     helm
     ;; paredit
@@ -27,6 +29,12 @@
     general
     ;; which-key shows partial keybindings
     which-key
+    ;; golden ration automatically resizes windows
+    golden-ratio
+    ;; haskell mode
+    haskell-mode
+    ;; clojure mode
+    clojure-mode
     ))
 
 ;; now iterate over the list of packages and install if needed
@@ -46,8 +54,6 @@
 ;; the next two lines are the minimum for basic helm setup
 (require 'helm-config)
 (helm-mode 1)
-
-;; 
 
 ;; rebind basic keys to use helm commands
 (global-set-key (kbd "M-x") 'undefined)
@@ -70,7 +76,7 @@
 ;; set frame (window) size
 ;; (add-to-list 'default-frame-alist '(height . 40))
 ;; (add-to-list 'default-frame-alist '(width . 140))
-(setq initial-frame-alist '((top . 20) (left . 10) (width . 140) (height . 40)))
+(setq initial-frame-alist '((top . 0) (left . 0) (width . 140) (height . 40)))
 
 ;; disable menubar toolbar & scrollbar
 (menu-bar-mode -1)
@@ -111,15 +117,18 @@
 
 ;; rainbow delimiters
 (require 'rainbow-delimiters)
-(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
 
-;; evil leader shortcut keys
-;; should be enabled before evil mode
-;; (global-evil-leader-mode)
-;; (evil-leader/set-leader "<SPC>")
-;; (evil-leader/set-key
-;;   "f" 'helm-find-files
-;;   "x" 'helm-M-x)
+
+;; golden ration will automatically resize the active window
+(golden-ratio-mode 1)
+
+;; show whitespace
+(setq whitespace-style '(trailing tabs newline tab-mark newline-mark))
+(require 'whitespace)
+(global-whitespace-mode t)
+(setq whitespace-global-modes '(haskell-mode))
 
 ;; evil mode
 ;; must set C-u to be scroll up before the (require 'evil) line for some reason
@@ -160,3 +169,10 @@
 ;; which key
 (require 'which-key)
 (which-key-mode)
+
+;; haskell stuff
+;; use stack instead of cabal
+(setq haskell-compile-cabal-build-command "stack build")
+(require 'haskell-interactive-mode)
+(require 'haskell-process)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)

@@ -135,10 +135,27 @@
 ;; vim-like definitions, from general.el git page
 (general-evil-setup)
 ;; all keyword arguments are still supported
+;; some helm and other general shortcuts
 (general-nmap :prefix gen-leader
               "p" 'helm-mini
-              "f" 'helm-find-files
-              "x" 'helm-M-x)
+              "f f" 'helm-find-files
+              "f s" 'save-buffer
+              "x" 'helm-M-x
+              "b b" 'helm-buffers-list
+              "b k" 'kill-buffer
+              "q s" 'save-buffers-kill-terminal)
+;; shortcuts for switching windows
+(general-nmap :prefix gen-leader
+              "TAB" 'other-window)
+(general-nmap "J" 'windmove-down
+              "K" 'windmove-up
+              "H" 'windmove-left
+              "L" 'windmove-right)
+(general-nmap :prefix gen-leader
+              "w d" 'delete-window
+              "w o" 'delete-other-windows
+              "w h" 'split-window-below
+              "w v" 'split-window-right)
 
 ;; which key
 (require 'which-key)

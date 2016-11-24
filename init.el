@@ -4,8 +4,8 @@
 (require 'package)
 (add-to-list 'package-archives
 	     '("melpa-stable" . "http://stable.melpa.org/packages/") t)
-;; (add-to-list 'package-archives
-;;              '("melpa" . "http://melpa.org/packages/") t)
+(add-to-list 'package-archives
+              '("melpa" . "http://melpa.org/packages/") t)
 
 ;; Taking this line from clojure for the brave and true setup
 ;; I think its necessary for the packages to be loaded or something
@@ -67,6 +67,27 @@
 (define-key helm-map (kbd "C-z") 'helm-select-action)
 ;; rebind esc to actually exit stuff
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+;; rebind save and search to be more like other programs
+(global-set-key (kbd "C-s") 'undefined)
+(global-set-key (kbd "C-s") 'save-buffer)
+;; ctrl-f keys have to be set after evil loads
+;; ctrl-f in vim seems stupid anyway
+(defun set-ctrl-f-shortcuts ()
+  (global-set-key (kbd "C-f") 'undefined)
+  (global-set-key (kbd "C-f") 'isearch-forward)
+  (define-key isearch-mode-map "\C-f" 'isearch-repeat-forward))
+(set-ctrl-f-shortcuts)
+(require 'evil-states)
+(require 'evil-commands)
+(eval-after-load "evil-maps"
+  (define-key evil-motion-state-map "\C-f" nil))
+(eval-after-load "evil-maps"
+  (dolist (map '(evil-motion-state-map
+                 evil-insert-state-map
+                 evil-emacs-state-map))
+    (define-key (eval map) "\C-f" nil)))
+(eval-after-load "evil-maps"
+  (set-ctrl-f-shortcuts))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                                    ;;
@@ -101,6 +122,11 @@
 (setq-default save-place t)
 ;; keep track of saved places in ~/.emacs.d/places
 (setq save-place-file (concat user-emacs-directory "places"))
+
+;; set c indent style to linux
+;; set tab offset to 4 (linus is crazy, 8 is way too much)
+(setq c-default-style "linux"
+      c-basic-offset 4)
 
 ;; set shortcuts for next/previous buffer
 (global-set-key (kbd "<C-tab>") 'next-buffer)

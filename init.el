@@ -1,4 +1,9 @@
-;; emacs customisation file
+;;; init.el -- Jack Costigans init.el file for GNU Emacs
+
+;;; Commentary:
+;; Emacs customisation file
+
+;;; Code:
 
 ;; Define package repos
 (require 'package)
@@ -39,6 +44,8 @@
     haskell-mode
     ;; clojure mode
     clojure-mode
+    ;; CIDER
+    cider
     ))
 
 ;; now iterate over the list of packages and install if needed
@@ -104,7 +111,7 @@
 ;; (setq initial-frame-alist '((top . 0) (left . 0) (width . 140) (height . 40)))
 
 ;; disable menubar toolbar & scrollbar
-(menu-bar-mode -1)
+;; (menu-bar-mode -1)
 (toggle-scroll-bar -1)
 (tool-bar-mode -1)
 
@@ -152,7 +159,7 @@
 
 
 ;; golden ration will automatically resize the active window
-(golden-ratio-mode 1)
+;; (golden-ratio-mode 1)
 
 ;; show whitespace
 (setq whitespace-style '(trailing tabs newline tab-mark newline-mark))
@@ -162,6 +169,15 @@
 
 ;; enabled flycheck
 (add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; enable eldoc
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(require 'cider)
+(require 'clojure-mode)
+(add-hook 'cider-repl-mode-hook #'eldoc-mode)
+(add-hook 'cider-mode-hook #'eldoc-mode)
+(add-hook 'clojure-mode-hook #'eldoc-mode)
 
 ;; evil mode
 ;; must set C-u to be scroll up before the (require 'evil) line for some reason
@@ -194,14 +210,20 @@
                     "p" 'helm-mini
                     "f f" 'helm-find-files
                     "f s" 'save-buffer
+                    "f w" 'write-file
                     "x" 'helm-M-x
                     "b b" 'helm-buffers-list
                     "b k" 'kill-buffer
                     "b d" 'kill-this-buffer
                     "q s" 'save-buffers-kill-terminal)
 ;; shortcuts for switching windows
+(defun prev-window ()
+  "Move to the previous window.
+Just calls other window with a negative number."
+  (interactive) (other-window -1))
 (general-define-key :states '(normal insert emacs)
-                    "TAB" 'other-window)
+                    "TAB" 'other-window
+                    "<backtab>" 'prev-window)
 (general-define-key :states '(normal emacs)
                     "J" 'windmove-down
                     "K" 'windmove-up
@@ -219,6 +241,10 @@
                     "e n" 'flycheck-next-error
                     "e p" 'flycheck-previous-error
                     "e 0" 'flycheck-first-error)
+
+(general-define-key :states '(normal)
+                    "s f" 'paredit-forward-slurp-sexp
+                    "s b" 'paredit-backward-slurp-sexp)
 ;; which key
 (require 'which-key)
 (which-key-mode)
@@ -259,16 +285,30 @@
 ;; SPC m c a cabal actions
 ;; SPC m c b build the current cabal project, cabal/stack build
 ;;
-;;
-;; 
+
+;; Clojure kbd shortcuts
+(general-define-key :keymaps '(clojure-mode-map cider-mode-map)
+                    :states '(normal)
+                    :prefix gen-leader
+                    "r j" 'cider-jack-in
+                    "r c" 'cider-connect
+                    "r b" 'cider-load-buffer
+                    "r e" 'cider-eval-last-sexp
+                    "r n" 'cider-repl-set-ns
+                    "r r" 'cider-switch-to-repl-buffer
+                    "r d" 'cider-doc
+                    "r q" 'cider-quit
+                    "s l f" 'clojure-let-forward-slurp-sexp
+                    "s l b" 'clojure-let-backward-slurp-sexp)
+
+(provide 'init)
+;;; init.el ends here
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("3eb93cd9a0da0f3e86b5d932ac0e3b5f0f50de7a0b805d4eb1f67782e9eb67a4" default))))
+ '(cider-inject-dependencies-at-jack-in nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -46,6 +46,18 @@
     clojure-mode
     ;; CIDER
     cider
+    ;; rtags for cpp source code navigation
+    rtags
+    ;; irony mode for cpp source code completion
+    irony
+    ;; company/irony mode for auto-completion
+    company-irony
+    ;; flycheck and irony play along
+    flycheck-irony
+    ;; cmake for building c++
+    cmake-ide
+    ;; company-irony c headers
+    company-irony-c-headers
     ))
 
 ;; now iterate over the list of packages and install if needed
@@ -287,7 +299,7 @@ Just calls other window with a negative number."
 ;;
 
 ;; Clojure kbd shortcuts
-(general-define-key :keymaps '(clojure-mode-map cider-mode-map)
+(general-define-key :keymaps '(clojure-mode-map cider-mode-map cider-repl-mode-map)
                     :states '(normal)
                     :prefix gen-leader
                     "r j" 'cider-jack-in
@@ -301,6 +313,75 @@ Just calls other window with a negative number."
                     "s l f" 'clojure-let-forward-slurp-sexp
                     "s l b" 'clojure-let-backward-slurp-sexp)
 
+;; Coljure REPL shortcuts
+(general-define-key :keymaps '(cider-repl-mode-map)
+                    :states '(normal)
+                    :prefix gen-leader
+                    "r r" 'cider-switch-to-last-clojure-buffer)
+
+;; C++ stuff goes here
+
+;; Rtags stuff for source code navigation
+(require 'rtags)
+(require 'company-rtags)
+
+(setq rtags-competions-enabled t)
+(eval-after-load 'company
+  '(add-to-list
+    'company-backends 'company-rtags))
+(setq rtags-autostart-diagnostics t)
+(rtags-enable-standard-keybindings)
+
+;; helm rtags integration
+(require 'rtags-helm)
+(setq rtags-use-helm)
+
+;; source code completion using irony
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'objc-mode-hook 'irony-mode)
+
+(defun my-irony-mode-hook ()
+  (define-key irony-mode-map [remap completion-at-point]
+    'irony-completion-at-point-async)
+  (define-key irony-mode-map [remap complete-symbol]
+    'irony-completion-at-point-async))
+
+(add-hook 'irony-mode-hook 'my-irony-mode-hook)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+;; company mode with irony
+(add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
+(setq company-backends (delete 'company-semantic company-backends))
+(eval-after-load 'company
+  '(add-to-list
+    'company-backends 'company-irony))
+
+;; header file completion
+(require 'company-irony-c-headers)
+(eval-after-load 'company
+  '(add-to-list
+    'company-backends '(company-irony-c-headers company-irony)))
+
+;; syntax checking with flycheck
+(add-hook 'c++-mode-hook 'flycheck-mode)
+(add-hook 'c-mode 'flycheck-mode)
+
+;; RTags integration with flycheck
+(require 'flycheck-rtags)
+(defun my-flycheck-rtags-setup ()
+  (flycheck-select-checker 'rtags)
+  (setq-local flycheck-highlighting-mode nil) ;;RTags creats more accurate overlays
+  (setq-local flycheck-check-syntax-automatically nil))
+;; c-mode-common-hook is also called by c++ mode
+(add-hook 'c-mode-common-hook #'my-flycheck-rtags-setup)
+
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+
+;; CMake IDE
+(cmake-ide-setup)
+
 (provide 'init)
 ;;; init.el ends here
 (custom-set-variables
@@ -309,9 +390,3 @@ Just calls other window with a negative number."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cider-inject-dependencies-at-jack-in nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
